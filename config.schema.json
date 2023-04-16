@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "OpnSense",
   "pluginType": "platform",
   "singular": true,
   "schema": {
@@ -9,7 +9,49 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "OpnSense plugin"
+      },
+      "host": {
+        "title": "OpnSense Firewall host",
+        "description": "IP or hostname of your OpnSense firewall - need to be serving over https",
+        "type": "string",
+        "required": true,
+        "format": "hostname"
+      },
+      "apiKey": {
+        "title": "OpnSense user API key",
+        "type": "string",
+        "required": true
+      },
+      "apiSecret": {
+        "title": "OpnSense user API secret",
+        "type": "string",
+        "required": true
+      },
+      "allowInvalidCert": {
+        "title": "Allow invalid https certificate",
+        "description": "If set, you'll be able to connect to an https server with an invalid certificate",
+        "type": "boolean"
+      },
+      "fwRules": {
+        "title": "Firewall rules",
+        "type": "array",
+        "items": {
+          "title": "Rule",
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "title": "UUID",
+              "type": "string",
+              "required": true
+            },
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "required": true
+            }
+          }
+        }
       }
     }
   }

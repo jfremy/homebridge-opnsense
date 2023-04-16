@@ -1,169 +1,56 @@
+[![npm](https://badgen.net/npm/v/homebridge-opnsense/latest)](https://www.npmjs.com/package/homebridge-opnsense)
+[![npm](https://badgen.net/npm/dt/homebridge-opnsense)](https://www.npmjs.com/package/homebridge-opnsense)
 
-<p align="center">
+![NPM Package Downloads](https://badgen.net/npm/dm/homebridge-opnsense)
 
-<img src="https://github.com/homebridge/branding/raw/master/logos/homebridge-wordmark-logo-vertical.png" width="150">
+# Homebridge OpnSense
+[Homebridge OpnSense](https://www.npmjs.com/package/homebridge-opnsense) is a plugin for [Homebridge](https://github.com/homebridge/homebridge) allowing toggle OpnSense firewall rules from Homekit
 
-</p>
+## Installation
+Follow the instructions in [homebridge](https://www.npmjs.com/package/homebridge) for the homebridge server installation.
+This plugin is published through [NPM](https://www.npmjs.com/package/homebridge-opnsense) and should be installed "globally" by typing:
 
+    npm install -g homebridge-opnsense
 
-# Homebridge Platform Plugin Template
+Installation through
+[Homebridge Config UI X](https://www.npmjs.com/package/homebridge-config-ui-x) is also supported (and recommended).
 
-This is a template Homebridge platform plugin and can be used as a base to help you get started developing your own plugin.
+## Configuration
 
-This template should be used in conjunction with the [developer documentation](https://developers.homebridge.io/). A full list of all supported service types, and their characteristics is available on this site.
+### OpnSense
+- install the os-firewall plugin on your OpnSense firewall (under `System > Firmware > Plugins`)
+- create a user with the "Firewall: Rules: API" privileges (under `System > Access > Users`). *Note* unfortunately, I'm not 
+aware of any more restrictive rights - but it would be nice to have a set of rights that only allow to toggle rules, not 
+to create any.
+- and generate an API key / secret for this user - this will enable the plugin to toggle the firewall rules
+- create one or more firewall rules in the firewall automation sections (under `Firewall > Automation > Filters`). *Note* 
+this won't work with "regular" firewall rules, they have to be configured in the Automation section
+- write down the UUID of the rules you want to control through homebridge (you can find the UUIDs of your rules by calling 
+the API from your browser after logging into the OpnSense UI at `/api/firewall/filter/get`)
 
-## Clone As Template
+Before proceeding with the Homebridge configuration, it's good to try your rules by enabling them manually and verifying 
+they're doing what you except them to do.
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+### Homebridge
+Configure the plugin in your homebridge `config.json` file. Or using the settings page of the plugin
 
-<span align="center">
+A typical configuration will look like this:
 
-### [Create New Repository From Template](https://github.com/homebridge/homebridge-plugin-template/generate)
-
-</span>
-
-## Setup Development Environment
-
-To develop Homebridge plugins you must have Node.js 12 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
-
-* [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-
-## Install Development Dependencies
-
-Using a terminal, navigate to the project folder and run this command to install the development dependencies:
-
-```
-npm install
-```
-
-## Update package.json
-
-Open the [`package.json`](./package.json) and change the following attributes:
-
-* `name` - this should be prefixed with `homebridge-` or `@username/homebridge-` and contain no spaces or special characters apart from a dashes
-* `displayName` - this is the "nice" name displayed in the Homebridge UI
-* `repository.url` - Link to your GitHub repo
-* `bugs.url` - Link to your GitHub repo issues page
-
-When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
-
-## Update Plugin Defaults
-
-Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
-
-* `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-* `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file. 
-
-Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
-
-* `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
-
-## Build Plugin
-
-TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
-
-```
-npm run build
-```
-
-## Link To Homebridge
-
-Run this command so your global install of Homebridge can discover the plugin in your development environment:
-
-```
-npm link
-```
-
-You can now start Homebridge, use the `-D` flag so you can see debug log messages in your plugin:
-
-```
-homebridge -D
-```
-
-## Watch For Changes and Build Automatically
-
-If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes, you first need to add your plugin as a platform in `~/.homebridge/config.json`:
-```
-{
-...
-    "platforms": [
+    {
+      "host": "<Host name of your OpnSense firewall>",
+      "apiKey": "<API key for the user you configured>",
+      "apiSecret": "<API secret for the user you configured>",
+      "allowInvalidCert": <true/false - depends if you have a valid certificate for your opnsense web server>,
+      "fwRules": [
         {
-            "name": "Config",
-            "port": 8581,
-            "platform": "config"
+          "name": "rule 1",
+          "uuid": "<uuid associated with rule 1>"
         },
         {
-            "name": "<PLUGIN_NAME>",
-            //... any other options, as listed in config.schema.json ...
-            "platform": "<PLATFORM_NAME>"
-        }
-    ]
-}
-```
-
-and then you can run:
-
-```
-npm run watch
-```
-
-This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
-
-## Customise Plugin
-
-You can now start customising the plugin template to suit your requirements.
-
-* [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-* [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-* [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
-
-## Versioning Your Plugin
-
-Given a version number `MAJOR`.`MINOR`.`PATCH`, such as `1.4.3`, increment the:
-
-1. **MAJOR** version when you make breaking changes to your plugin,
-2. **MINOR** version when you add functionality in a backwards compatible manner, and
-3. **PATCH** version when you make backwards compatible bug fixes.
-
-You can use the `npm version` command to help you with this:
-
-```bash
-# major update / breaking changes
-npm version major
-
-# minor update / new features
-npm version update
-
-# patch / bugfixes
-npm version patch
-```
-
-## Publish Package
-
-When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
-
-```
-npm publish
-```
-
-If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will need to add `--access=public` to command the first time you publish.
-
-#### Publishing Beta Versions
-
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
-
-```bash
-# create a new pre-release version (eg. 2.1.0-beta.1)
-npm version prepatch --preid beta
-
-# publish to @beta
-npm publish --tag=beta
-```
-
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
-
-```
-sudo npm install -g homebridge-example-plugin@beta
-```
-
-
+          "name": "rule 2",
+          "uuid": "<uuid associated with rule 2>"
+        },
+        (...)
+      ],
+      "platform": "OpnSense"
+    }
